@@ -1,0 +1,1452 @@
+
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2563eb">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>ระบบจัดการข้อมูลผู้ขอรับความช่วยเหลือในชุมชน — Prototype</title>
+<script>
+  // โหลดค่า Theme ก่อน Render เพื่อป้องกันแสงกระพริบ (FOUC)
+  // Theme managed by IndexedDB
+</script>
+<style>
+:root {
+  --bg: #f5f7fb;
+  --card: #fff;
+  --text: #172033;
+  --muted: #667085;
+  --line: #e5e7eb;
+  --primary: #2563eb;
+  --danger: #dc2626;
+  --success: #16a34a;
+  --warning: #d97706;
+  --nav-bg: #e9eefb;
+  --btn-bg: #e9eefb;
+  --th-bg: #fafafa;
+  --input-bg: #fff;
+  --input-border: #d6dae3;
+  --photo-bg: #fafbff;
+  --alert-bg: #fff7ed;
+  --alert-txt: #9a3412;
+  --urgent-bg: #fee2e2;
+  --urgent-txt: #991b1b;
+  --normal-bg: #dcfce7;
+  --normal-txt: #166534;
+}
+[data-theme="dark"] {
+  --bg: #111827;
+  --card: #1f2937;
+  --text: #f9fafb;
+  --muted: #9ca3af;
+  --line: #374151;
+  --primary: #3b82f6;
+  --nav-bg: #374151;
+  --btn-bg: #374151;
+  --th-bg: #111827;
+  --input-bg: #374151;
+  --input-border: #4b5563;
+  --photo-bg: #111827;
+  --alert-bg: #431407;
+  --alert-txt: #ffedd5;
+  --urgent-bg: #7f1d1d;
+  --urgent-txt: #fecaca;
+  --normal-bg: #14532d;
+  --normal-txt: #bbf7d0;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit;color:var(--text)}
+button{cursor:pointer}
+.top{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+.topin{max-width:1180px;margin:auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.brand{font-weight:800}.brand small{display:block;color:var(--muted);font-weight:500;font-size:12px}
+.container{max-width:1180px;margin:auto;padding:18px 16px 60px}
+.nav{display:flex;gap:8px;overflow:auto;padding:8px 0 16px}
+.nav button{border:0;background:var(--nav-bg);color:var(--text);padding:11px 15px;border-radius:12px;white-space:nowrap}
+.nav button.active{background:var(--primary);color:white}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+.stat .n{font-size:28px;font-weight:800;margin-top:5px}.stat .l{color:var(--muted);font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-top:14px}.card h2,.card h3{margin:0 0 14px}
+.actions{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.action{padding:20px;border:1px solid var(--line);background:var(--card);border-radius:16px;text-align:left}
+.action b{display:block;font-size:17px}.action span{color:var(--muted);font-size:13px}
+.row{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.row3{grid-template-columns:repeat(3,1fr)}
+label{display:block;font-weight:700;font-size:13px;margin-bottom:6px}
+input,select,textarea{width:100%;padding:11px 12px;border:1px solid var(--input-border);border-radius:10px;background:var(--input-bg);color:var(--text)}
+textarea{min-height:90px;resize:vertical}
+.full{grid-column:1/-1}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.btn{border:0;border-radius:10px;padding:11px 15px;background:var(--btn-bg);color:var(--text)}
+.primary{background:var(--primary);color:white}.success{background:var(--success);color:white}.danger{background:var(--danger);color:white}.warning{background:#f59e0b;color:#111}
+.choice{display:flex;gap:8px;flex-wrap:wrap}
+.choice label{border:1px solid var(--input-border);padding:10px 12px;border-radius:10px;background:var(--input-bg);font-weight:600}
+.choice input{width:auto;margin-right:5px}
+.tablewrap{overflow:auto}
+.table{width:100%;border-collapse:collapse;min-width:760px}
+.table th,.table td{padding:10px;border-bottom:1px solid var(--line);text-align:left;font-size:13px}
+.table th{color:var(--muted);background:var(--th-bg)}
+.badge{display:inline-block;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:800}
+.urgent{background:var(--urgent-bg);color:var(--urgent-txt)}
+.normal{background:var(--normal-bg);color:var(--normal-txt)}
+.muted{color:var(--muted)}
+.hidden{display:none!important}
+.alert{padding:12px;border-radius:10px;background:var(--alert-bg);color:var(--alert-txt);margin-bottom:12px;font-size:13px}
+.ok{background:#ecfdf3;color:#166534}
+.idphotos{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.photo{border:1px dashed var(--muted);border-radius:12px;padding:12px;text-align:center;background:var(--photo-bg)}
+.photo img{max-width:100%;max-height:180px;border-radius:8px;margin-top:8px}
+.searchbar{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:8px}
+.empty{text-align:center;color:var(--muted);padding:28px}
+.helpPhotos{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.helpPhoto{border:1px dashed var(--muted);border-radius:12px;padding:12px;background:var(--photo-bg)}
+.helpPhoto img{max-width:100%;max-height:180px;border-radius:8px;margin-top:8px}
+.dateBE{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+@media(max-width:850px){.helpPhotos{grid-template-columns:1fr 1fr}.dateBE{grid-template-columns:1fr 1fr}.grid{grid-template-columns:repeat(2,1fr)}.actions{grid-template-columns:repeat(3,1fr)}.row,.row3,.searchbar{grid-template-columns:1fr}.idphotos{grid-template-columns:1fr}}
+@media(max-width:520px){.helpPhotos{grid-template-columns:1fr}.grid,.actions{grid-template-columns:1fr 1fr}.container{padding:12px 10px 50px}.card{padding:14px}.topin{padding:10px}.stat .n{font-size:23px}}
+
+/* ===== Mobile / Touch Optimization ===== */
+html{overflow-x:hidden;-webkit-text-size-adjust:100%}
+body{min-width:0;overflow-x:hidden;padding-bottom:env(safe-area-inset-bottom)}
+button,.btn,.action,input,select,textarea{min-height:44px}
+button,.btn,.action{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+input,select,textarea{font-size:16px} /* ป้องกัน iOS Safari ซูมเมื่อแตะช่องกรอก */
+.top{padding-top:env(safe-area-inset-top)}
+.topin{min-width:0}
+.brand{min-width:0;flex:1}
+.brand small{line-height:1.45}
+.nav{-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.tablewrap{-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.photo,.helpPhoto{min-width:0}
+.photo img,.helpPhoto img{width:100%;height:auto;object-fit:contain}
+.btns{align-items:stretch}
+.btns .btn{flex:0 1 auto}
+.choice label{min-height:44px;display:flex;align-items:center}
+.choice input{min-height:auto}
+#mediaModal{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.82);display:none;padding:env(safe-area-inset-top) 12px env(safe-area-inset-bottom);overflow:auto}
+#mediaModal.open{display:flex;align-items:flex-start;justify-content:center}
+#mediaModal .mediaBox{width:min(100%,980px);margin:12px auto;background:var(--card);color:var(--text);border-radius:16px;padding:14px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+#mediaModal .mediaHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;position:sticky;top:0;background:var(--card);z-index:1;padding-bottom:6px}
+#mediaModal .mediaGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+#mediaModal .mediaCard{border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--photo-bg)}
+#mediaModal .mediaCard img{width:100%;max-height:70vh;object-fit:contain;border-radius:8px;background:var(--bg)}
+@media(max-width:700px){
+  .topin{display:block;padding:10px}
+  .brand{display:block;padding-right:4px}
+  .brand small{font-size:11px;margin-top:3px}
+  .topin>div:last-child{display:flex!important;overflow-x:auto;flex-wrap:nowrap!important;gap:6px;margin-top:8px;padding-bottom:2px;-webkit-overflow-scrolling:touch}
+  .topin>div:last-child .btn{flex:0 0 auto;white-space:nowrap;padding:9px 11px}
+  .container{padding:10px 8px 34px}
+  .nav{gap:6px;padding:7px 0 12px;position:sticky;top:0;background:var(--bg);z-index:8}
+  .nav button{min-height:46px;padding:10px 13px}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .action{padding:15px 12px;min-height:105px}
+  .action b{font-size:15px}
+  .action span{font-size:12px;line-height:1.4}
+  .card{padding:12px;margin-top:10px;border-radius:14px}
+  .card h2{font-size:20px}
+  .card h3{font-size:16px}
+  .row,.row3,.searchbar{grid-template-columns:1fr}
+  .dateBE{grid-template-columns:1fr 1fr}
+  .dateBE input{grid-column:1/-1}
+  .idphotos,.helpPhotos{grid-template-columns:1fr}
+  .btns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .btns .btn{width:100%}
+  .btns .btn:only-child{grid-column:1/-1}
+  .photo .btns,.helpPhoto .btns{display:grid;grid-template-columns:1fr 1fr}
+  .stat{padding:12px}
+  .stat .n{font-size:22px}
+  .stat .l{font-size:12px;line-height:1.35}
+  .table{min-width:0}
+  /* เปลี่ยนตารางรายชื่อเป็นการ์ดบนมือถือ */
+  .table thead{display:none}
+  .table,.table tbody,.table tr,.table td{display:block;width:100%}
+  .table tr{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:10px;padding:8px}
+  .table td{border:0;border-bottom:1px dashed var(--line);padding:8px 6px;text-align:left;font-size:13px;min-height:0}
+  .table td:last-child{border-bottom:0}
+  .table td::before{content:attr(data-label);display:block;color:var(--muted);font-size:11px;font-weight:700;margin-bottom:3px}
+  .table td:first-child::before{display:none}
+  .table td:first-child{padding-top:4px}
+  .table td:last-child{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .table td:last-child::before{grid-column:1/-1}
+  .table td:last-child .btn{width:100%}
+  #mediaModal .mediaBox{margin:0;border-radius:0;min-height:100%;padding:12px}
+  #mediaModal .mediaGrid{grid-template-columns:1fr}
+  #mediaModal .mediaCard img{max-height:60vh}
+}
+@media(max-width:380px){
+  .grid,.actions{grid-template-columns:1fr}
+  .btns{grid-template-columns:1fr}
+  .photo .btns,.helpPhoto .btns{grid-template-columns:1fr}
+}
+@media(hover:none){
+  .btn:hover,.action:hover{transform:none}
+}
+
+/* ===== Community Care Authentication ===== */
+.authGate{position:fixed;inset:0;z-index:3000;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto}
+.authCard{width:min(520px,100%);background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;box-shadow:0 18px 50px rgba(0,0,0,.16)}
+.authCard h2{margin-top:0}.authCard .muted{line-height:1.6}.authActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.authActions button{flex:1}.authError{margin-top:10px;color:#b91c1c}.authSuccess{margin-top:10px;color:#166534}
+.passwordMask{letter-spacing:3px;font-weight:700}
+</style>
+</head>
+<body>
+<div id="mediaModal" aria-hidden="true" onclick="if(event.target===this)closeMediaModal()">
+  <div class="mediaBox" role="dialog" aria-modal="true">
+    <div class="mediaHead"><b id="mediaTitle">รูปภาพ</b><button class="btn danger" type="button" onclick="closeMediaModal()">✕ ปิด</button></div>
+    <div id="mediaContent"></div>
+  </div>
+</div>
+<header class="top"><div class="topin">
+<div class="brand">🏠 <span id="brandTitle">Community Care</span><small id="brandSub">ระบบจัดการข้อมูลผู้ขอรับความช่วยเหลือในชุมชน • หมู่10 ตำบลบางคูวัด อำเภอเมือง จังหวัดปทุมธานี</small></div>
+<div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+  <span id="cloudStatus" class="muted" style="font-size:12px">📱 Offline</span>
+  <button class="btn" onclick="toggleTheme()" id="themeToggle">🌙 โหมดมืด</button>
+  <button class="btn" onclick="exportCSV()">⬇️ Export CSV</button>
+
+</div>
+</div></header>
+
+<main class="container">
+<nav class="nav" id="nav">
+<button data-page="home" class="active">🏠 หน้าหลัก</button>
+<button data-page="add">➕ เพิ่มข้อมูล</button>
+<button data-page="manage">✏️ ค้นหา/จัดการข้อมูล</button>
+<button data-page="help">🤝 การช่วยเหลือ</button>
+<button data-page="reports">📊 รายงาน</button>
+
+</nav>
+<div id="app"></div>
+</main>
+
+<script>
+const DEFAULT_API = "";
+const DEFAULT_COMMUNITIES = [];
+const DEFAULT_TYPES = ["พิการ","ผู้ป่วยติดเตียง","ผู้สูงอายุ","ฐานะยากลำบาก"];
+const DEFAULT_HELPS = ["ถุงยังชีพ","อุปกรณ์การแพทย์","หน่วยงานอื่นๆ"];
+const DEFAULT_HEADER = "ระบบจัดการข้อมูลผู้ขอรับความช่วยเหลือในชุมชน • หมู่10 ตำบลบางคูวัด อำเภอเมือง จังหวัดปทุมธานี";
+const DEFAULT_NAME = "Community Care Version 1.0";
+const DB_NAME="CommunityCareDB", DB_VERSION=1;
+let settings={apiUrl:"",communities:[],types:DEFAULT_TYPES.slice(),helps:DEFAULT_HELPS.slice(),brandName:DEFAULT_NAME,brandSub:DEFAULT_HEADER,configured:false,cloudEnabled:false,theme:"light",folderName:"",auth:null};
+let API_URL="", communities=DEFAULT_COMMUNITIES.slice(), types=DEFAULT_TYPES.slice(), helps=DEFAULT_HELPS.slice();
+let people=[], help=[], statuses=[], page="home", editId=null, db=null, dbReady=false, isConfigured=false, selectedFolderName="";
+let authenticated=false;
+let authMode="login";
+let authChallengeBusy=false;
+
+function setCloudStatus(message){
+  const el=document.getElementById("cloudStatus");
+  if(el) el.textContent=String(message||"");
+}
+
+function updateHeaderUI(){
+  document.getElementById("brandTitle").textContent = settings.brandName || DEFAULT_NAME;
+  document.getElementById("brandSub").textContent = settings.brandSub || DEFAULT_HEADER;
+}
+
+function toggleTheme() {
+  const root = document.documentElement;
+  const btn = document.getElementById("themeToggle");
+  if(root.getAttribute("data-theme") === "dark") {
+    root.removeAttribute("data-theme");
+    settings.theme="light"; persistSettings();
+    if(btn) btn.textContent = "🌙 โหมดมืด";
+  } else {
+    root.setAttribute("data-theme", "dark");
+    settings.theme="dark"; persistSettings();
+    if(btn) btn.textContent = "☀️ โหมดสว่าง";
+  }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    await initDB();
+    await loadSettings();
+    // การเปิดระบบครั้งแรกจะยังไม่ถือ IndexedDB เป็นฐานข้อมูลหลัก
+    // แหล่งข้อมูลหลักต้องเป็นแหล่งที่ผู้ใช้ยืนยันในการตั้งค่าครั้งแรกเท่านั้น
+    if(isConfigured && settings.cloudEnabled && settings.apiUrl){
+      people=[]; help=[]; statuses=[];
+      const ok=await loadCloud(true);
+      if(!ok){
+        // เก็บค่าการตั้งค่าเดิมไว้ แต่ไม่ถือว่าระบบพร้อมใช้งานจนกว่าจะเชื่อมต่อสำเร็จ
+        isConfigured=false;
+        setCloudStatus("⚠️ เชื่อมต่อ Cloud ไม่สำเร็จ • กรุณาตรวจสอบการตั้งค่า");
+      }
+    }else if(isConfigured && settings.folderHandle){
+      people=[]; help=[]; statuses=[];
+      const ok=await loadFolderData(false);
+      if(!ok){
+        // สำคัญ: ห้ามลบสถานะการตั้งค่าของเครื่องเพียงเพราะ Browser ยังไม่อนุญาต
+        // File System Access ในการเปิดหน้าเว็บอัตโนมัติ (ต้องเกิดจาก user gesture)
+        await loadLocalData();
+        setCloudStatus("⚠️ Offline • ต้องอนุญาตโฟลเดอร์เมื่อพร้อมใช้งาน");
+      }
+    }else if(isConfigured){
+      // การตั้งค่าถูกเก็บไว้ในเครื่องแล้ว แม้ไม่มี folderHandle ให้ถือว่ายังเป็นเครื่องเดิม
+      // และใช้ IndexedDB เป็นข้อมูลชั่วคราวจนกว่าจะเลือก/เชื่อมโฟลเดอร์อีกครั้ง
+      await loadLocalData();
+      setCloudStatus("📱 Offline • การตั้งค่าเดิมของเครื่องถูกเก็บไว้แล้ว");
+    }else{
+      people=[]; help=[]; statuses=[];
+    }
+    updateHeaderUI();
+    updateModeUI();
+    authenticated=!isConfigured;
+    render();
+    if(isConfigured){
+      authenticated=false;
+      showLoginGate();
+    }
+  } catch(e){ console.error(e); alert("ไม่สามารถเปิดฐานข้อมูลได้: "+e.message); }
+});
+
+function openDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains("settings"))d.createObjectStore("settings",{keyPath:"key"});if(!d.objectStoreNames.contains("people"))d.createObjectStore("people",{keyPath:"id"});if(!d.objectStoreNames.contains("help"))d.createObjectStore("help",{keyPath:"id"});if(!d.objectStoreNames.contains("statuses"))d.createObjectStore("statuses",{keyPath:"id"});};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error||new Error("เปิด IndexedDB ไม่สำเร็จ"));});}
+async function initDB(){db=await openDB();dbReady=true;}
+function store(n,m="readonly"){return db.transaction(n,m).objectStore(n)}
+function idbPut(n,v){return new Promise((res,rej)=>{let r=store(n,"readwrite").put(v);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+function idbGet(n,k){return new Promise((res,rej)=>{let r=store(n).get(k);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+function idbAll(n){return new Promise((res,rej)=>{let r=store(n).getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error)})}
+function idbClear(n){return new Promise((res,rej)=>{let r=store(n,"readwrite").clear();r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+const DEVICE_CONFIG_KEY="communityCareDeviceConfigV1";
+function getDeviceConfig(){try{return JSON.parse(localStorage.getItem(DEVICE_CONFIG_KEY)||"null")}catch(e){return null}}
+function saveDeviceConfig(){try{const c={configured:!!settings.configured,cloudEnabled:!!settings.cloudEnabled,apiUrl:settings.apiUrl||"",folderName:settings.folderName||"",theme:settings.theme||"light",brandName:settings.brandName||DEFAULT_NAME,brandSub:settings.brandSub||DEFAULT_HEADER,communities:settings.communities||DEFAULT_COMMUNITIES.slice(),types:settings.types||DEFAULT_TYPES.slice(),helps:settings.helps||DEFAULT_HELPS.slice(),savedAt:new Date().toISOString()};localStorage.setItem(DEVICE_CONFIG_KEY,JSON.stringify(c))}catch(e){console.warn("saveDeviceConfig",e)}}
+async function persistSettings(){if(dbReady)await idbPut("settings",{key:"app",value:settings});saveDeviceConfig()}
+async function loadSettings(){const x=await idbGet("settings","app");if(x?.value)settings=Object.assign(settings,x.value);settings.communities=Array.isArray(settings.communities)?settings.communities.map(v=>String(v).trim()).filter(Boolean):[];if(settings.brandName==="Community Care Version 1.0 Offline"){settings.brandName=DEFAULT_NAME;try{await idbPut("settings",{key:"app",value:settings})}catch(e){console.warn("migrate brandName",e)}}const device=getDeviceConfig();if(device?.configured && !settings.configured)settings=Object.assign(settings,device);isConfigured=!!settings.configured;API_URL=settings.cloudEnabled?settings.apiUrl||"":"";communities=settings.communities?.length?settings.communities:DEFAULT_COMMUNITIES.slice();types=settings.types?.length?settings.types:DEFAULT_TYPES.slice();helps=settings.helps?.length?settings.helps:DEFAULT_HELPS.slice();selectedFolderName=settings.folderName||"";if(settings.auth&&typeof settings.auth==="object"){settings.auth.email=String(settings.auth.email||"").trim().toLowerCase();settings.auth.salt=String(settings.auth.salt||"");settings.auth.hash=String(settings.auth.hash||"")}else settings.auth=null;if(settings.theme==="dark")document.documentElement.setAttribute("data-theme","dark")}
+async function loadLocalData(){people=await idbAll("people");help=await idbAll("help");statuses=await idbAll("statuses")}
+const DATA_FILE_NAME="community-care-data.json";
+async function getStoredDirectoryHandle(){
+  try{return settings.folderHandle||null}catch(e){return null}
+}
+async function ensureFolderPermission(handle,write=false){
+  if(!handle)return false;
+  try{
+    const mode=write?"readwrite":"read";
+    if(handle.queryPermission){
+      const q=await handle.queryPermission({mode});
+      if(q==="granted")return true;
+      if(handle.requestPermission){const r=await handle.requestPermission({mode});return r==="granted";}
+      return false;
+    }
+    return true;
+  }catch(e){return false}
+}
+async function loadFolderData(showMessage=false){
+  const h=await getStoredDirectoryHandle();
+  if(!h)return false;
+  if(!(await ensureFolderPermission(h,false))){
+    if(showMessage)setCloudStatus("⚠️ Offline • ไม่ได้รับสิทธิ์เข้าถึงโฟลเดอร์ข้อมูล");
+    return false;
+  }
+  try{
+    const f=await h.getFileHandle(DATA_FILE_NAME,{create:false});
+    const file=await f.getFile();
+    const text=await file.text();
+    if(!text.trim())return false;
+    const d=JSON.parse(text);
+    if(!Array.isArray(d.people)||!Array.isArray(d.help)||!Array.isArray(d.statuses))throw new Error("ไฟล์ข้อมูลเดิมไม่ถูกต้อง");
+    people=d.people; help=d.help; statuses=d.statuses;
+    if(d.settings?.auth) settings.auth=d.settings.auth;
+    if(d.settings?.communities) settings.communities=d.settings.communities;
+    if(d.settings?.types) settings.types=d.settings.types;
+    if(d.settings?.helps) settings.helps=d.settings.helps;
+    communities=settings.communities?.length?settings.communities:DEFAULT_COMMUNITIES.slice();
+    types=settings.types?.length?settings.types:DEFAULT_TYPES.slice();
+    helps=settings.helps?.length?settings.helps:DEFAULT_HELPS.slice();
+    // เก็บสำเนาใน IndexedDB เป็น cache เท่านั้น ไม่ใช่แหล่งข้อมูลหลักเมื่อเลือกโฟลเดอร์
+    await cacheLocalData();
+    setCloudStatus("📱 Offline • โหลดข้อมูลเดิมจากไฟล์สำเร็จ ("+people.length+" รายการ)");
+    return true;
+  }catch(e){
+    if(e.name==="NotFoundError")return false;
+    console.error("loadFolderData",e);
+    if(showMessage)alert("ไม่สามารถอ่านไฟล์ข้อมูลเดิมในโฟลเดอร์ได้\n\n"+e.message);
+    return false;
+  }
+}
+async function cacheLocalData(){for(const [n,a] of [["people",people],["help",help],["statuses",statuses]]){await idbClear(n);for(const x of a)await idbPut(n,x)}}
+async function writeFolderData(){
+  const h=await getStoredDirectoryHandle();
+  if(!h)return false;
+  if(!(await ensureFolderPermission(h,true)))throw new Error("ไม่ได้รับสิทธิ์เขียนไฟล์ในโฟลเดอร์");
+  const f=await h.getFileHandle(DATA_FILE_NAME,{create:true});
+  const w=await f.createWritable();
+  const payload={version:1,updatedAt:new Date().toISOString(),settings:{brandName:settings.brandName,brandSub:settings.brandSub,communities:settings.communities,types:settings.types,helps:settings.helps,auth:settings.auth},people,help,statuses};
+  await w.write(JSON.stringify(payload,null,2));
+  await w.close();
+  return true;
+}
+async function save(){
+  // IndexedDB เป็น cache เสมอ; แหล่งข้อมูลหลักถูกเลือกตอนตั้งค่าครั้งแรก
+  await cacheLocalData();
+
+  // เมื่อเลือก Cloud เป็นฐานข้อมูลหลัก ทุกการบันทึกข้อมูลต้องส่งขึ้น Cloud อัตโนมัติ
+  // ไม่จำเป็นต้องกดปุ่ม "เชื่อมเครือข่ายออนไลน์" ซ้ำทุกครั้ง
+  if(settings.cloudEnabled && String(settings.apiUrl||"").trim()){
+    try{
+      setCloudStatus("☁️ Online • กำลังบันทึกข้อมูลขึ้น Cloud…");
+      await postCloud({action:"saveAll",people,help,statuses});
+      API_URL=settings.apiUrl;
+      setCloudStatus("☁️ Online • บันทึกข้อมูลขึ้น Cloud สำเร็จ");
+      return;
+    }catch(e){
+      setCloudStatus("⚠️ Online • ส่งข้อมูลขึ้น Cloud ไม่สำเร็จ");
+      throw new Error("ไม่สามารถส่งข้อมูลขึ้น Cloud ได้: "+e.message);
+    }
+  }
+
+  // Offline: เขียนลงไฟล์หลักในโฟลเดอร์
+  if(settings.folderHandle){
+    try{
+      await writeFolderData();
+      setCloudStatus("📱 Offline • บันทึกลงไฟล์ข้อมูลแล้ว");
+      return;
+    }catch(e){
+      setCloudStatus("⚠️ Offline • บันทึกไฟล์ไม่สำเร็จ");
+      throw e;
+    }
+  }
+
+  setCloudStatus("📱 Offline • บันทึกใน IndexedDB แล้ว");
+}
+async function cloudSync(){
+  if(!isConfigured){alert("กรุณาตั้งค่าฐานข้อมูลก่อนใช้งาน Cloud");return}
+  if(!settings.cloudEnabled||!settings.apiUrl){alert("ยังไม่ได้เปิดใช้งาน Cloud ในตั้งค่าระบบ");return}
+  try{
+    setCloudStatus("☁️ กำลังส่งข้อมูลขึ้น Cloud…");
+    await cloudRequest("saveAll",{people,help,statuses});
+    await loadCloud(false);
+    setCloudStatus("☁️ Online • ซิงค์ Cloud สำเร็จ");
+    render();
+  }catch(e){
+    setCloudStatus("⚠️ Online • ซิงค์ไม่สำเร็จ");
+    alert("ซิงค์ Cloud ไม่สำเร็จ: "+e.message+"\n\nข้อมูลในเครื่องยังคงอยู่");
+  }
+}
+async function postCloud(payload){
+  const action=String(payload?.action||"");
+  const body=Object.assign({},payload||{});
+  delete body.action;
+  return cloudRequest(action,body);
+}
+function parseCloudResponse(text){
+  let d;
+  try{d=typeof text==="string"?JSON.parse(text):text}catch(e){throw new Error("Google Apps Script ส่งข้อมูลกลับมาไม่ใช่ JSON")}
+  if(d?.data && typeof d.data==="object") d=d.data;
+  if(d?.result && typeof d.result==="object") d=d.result;
+  if(!Array.isArray(d?.people)||!Array.isArray(d?.help)||!Array.isArray(d?.statuses)){
+    throw new Error("ไม่พบข้อมูล people/help/statuses จาก Google Apps Script");
+  }
+  return d;
+}
+
+async function cloudRequest(action, payload=null){
+  const target=String(settings.apiUrl||"").trim();
+  if(!target) throw new Error("ยังไม่ได้ระบุ Google Apps Script Web App URL");
+
+  // If this HTML is hosted on Cloudflare Pages and a same-origin proxy exists,
+  // use it to avoid browser CORS/redirect problems with Google Apps Script.
+  const proxyPath="/api/cloud";
+
+  // เมื่อหน้าเว็บถูกเปิดจาก Cloudflare/HTTPS ให้ใช้ /api/cloud เสมอ
+  // ห้ามตรวจเฉพาะ *.pages.dev เพราะผู้ใช้อาจใช้ Custom Domain ของ Cloudflare
+  // หากเรียก Google Apps Script ตรงจาก Browser จะเกิด CORS/redirect และขึ้น "Failed to fetch"
+  const useProxy=location.protocol==="https:" ||
+                 location.hostname.endsWith(".pages.dev") ||
+                 location.hostname==="localhost" ||
+                 location.hostname==="127.0.0.1";
+
+  if(useProxy){
+    const r=await fetch(proxyPath,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({target,action,payload})
+    });
+    const t=await r.text();
+    if(!r.ok){
+      if(r.status===404){
+        throw new Error("ไม่พบ Cloudflare Function /api/cloud — ต้องนำไฟล์ functions/api/cloud.js ไป Deploy พร้อมเว็บไซต์ก่อน");
+      }
+      throw new Error("Cloudflare Proxy HTTP "+r.status+(t?": "+t:""));
+    }
+    try{return JSON.parse(t)}catch(e){throw new Error("Cloudflare Proxy ส่งข้อมูลกลับมาไม่ใช่ JSON")}
+  }
+
+  // Direct fallback for environments where the page is not using the proxy.
+  if(action==="getAll"){
+    const r=await fetch(target+(target.includes("?")?"&":"?")+"action=getAll&t="+Date.now(),{method:"GET",cache:"no-store"});
+    const t=await r.text();
+    if(!r.ok) throw new Error("Google Apps Script HTTP "+r.status);
+    try{return JSON.parse(t)}catch(e){throw new Error("Google Apps Script ส่งข้อมูลกลับมาไม่ใช่ JSON")}
+  }
+
+  const r=await fetch(target,{
+    method:"POST",
+    headers:{"Content-Type":"text/plain;charset=utf-8"},
+    body:JSON.stringify(Object.assign({action},payload||{}))
+  });
+  const t=await r.text();
+  if(!r.ok) throw new Error("Google Apps Script HTTP "+r.status);
+  try{return JSON.parse(t)}catch(e){throw new Error("Google Apps Script ส่งข้อมูลกลับมาไม่ใช่ JSON")}
+}
+
+function cloudGetUrl(){
+  const base=String(settings.apiUrl||"").trim();
+  if(!base)return "";
+  return base+(base.includes("?")?"&":"?")+"action=getAll&t="+Date.now();
+}
+async function loadCloud(showMessage=true){
+  if(!settings.cloudEnabled||!settings.apiUrl)return false;
+  try{
+    if(showMessage)setCloudStatus("☁️ Online • กำลังโหลดข้อมูลเดิมจาก Cloud…");
+    const response=await cloudRequest("getAll");
+    const d=parseCloudResponse(response);
+    people=d.people; help=d.help; statuses=d.statuses;
+    if(d.auth) settings.auth=d.auth;
+    if(Array.isArray(d.settings?.communities)) settings.communities=d.settings.communities;
+    if(Array.isArray(d.settings?.types)) settings.types=d.settings.types;
+    if(Array.isArray(d.settings?.helps)) settings.helps=d.settings.helps;
+
+    // ฐานข้อมูลรุ่นเก่าอาจไม่มี settings.* ให้สร้างรายการจากข้อมูลจริง
+    if(!settings.communities?.length && Array.isArray(d.people)){
+      settings.communities=[...new Set(
+        d.people.map(p=>String(p?.community||"").trim()).filter(Boolean)
+      )];
+    }
+    if(!settings.types?.length && Array.isArray(d.people)){
+      settings.types=[...new Set(
+        d.people.flatMap(p=>Array.isArray(p?.types)?p.types:[p?.types])
+          .map(x=>String(x||"").trim()).filter(Boolean)
+      )];
+    }
+    if(!settings.helps?.length && Array.isArray(d.help)){
+      settings.helps=[...new Set(
+        d.help.flatMap(h=>Array.isArray(h?.types)?h.types:[h?.types])
+          .map(x=>String(x||"").trim()).filter(Boolean)
+      )];
+    }
+
+    communities=settings.communities?.length?settings.communities:communities;
+    types=settings.types?.length?settings.types:types;
+    helps=settings.helps?.length?settings.helps:helps;
+
+    if(communities.length){
+      existingCloudCommunitiesLocked=true;
+      existingCloudCommunities=communities.slice();
+      const ce=document.getElementById("setCommunities");
+      if(ce){ ce.value=communities.join(", "); ce.readOnly=true; }
+    }
+    // โหลดจาก Cloud แล้วเก็บไว้เป็น cache เท่านั้น ห้ามเรียก save()
+    // เพราะ save() จะส่งข้อมูลกลับขึ้น Cloud อีกครั้งโดยไม่จำเป็น
+    await cacheLocalData();
+    setCloudStatus("☁️ Online • โหลดข้อมูลเดิมจาก Cloud สำเร็จ ("+people.length+" รายการ)");
+    return true;
+  }catch(e){
+    console.error("loadCloud",e);
+    setCloudStatus("⚠️ Online • โหลด Cloud ไม่สำเร็จ");
+    if(showMessage)alert("ไม่สามารถดึงข้อมูลเดิมจาก Google Apps Script ได้\n\n"+e.message+"\n\nข้อมูล Offline ในเครื่องจะไม่ถูกลบ");
+    return false;
+  }
+}
+function updateModeUI(){
+  const b=document.getElementById("themeToggle");
+  if(b)b.textContent=document.documentElement.getAttribute("data-theme")==="dark"?"☀️ โหมดสว่าง":"🌙 โหมดมืด";
+  // แสดง Online/Offline ตามวิธีฐานข้อมูลที่เลือกไว้ในการตั้งค่าครั้งแรก
+  if(!isConfigured){
+    setCloudStatus("⚙️ ยังไม่ได้ตั้งค่าฐานข้อมูล");
+    return;
+  }
+  if(settings.cloudEnabled && settings.apiUrl){
+    setCloudStatus("☁️ Online");
+  }else{
+    setCloudStatus("📱 Offline");
+  }
+}
+function id(prefix){return prefix+"-"+Date.now().toString().slice(-8)}
+function esc(s=""){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function parseBirthDate(d){
+  if(!d)return null;
+  let parts=String(d).split("-");
+  if(parts.length!==3)return null;
+  let y=Number(parts[0]),m=Number(parts[1]),day=Number(parts[2]);
+  if(!y||!m||!day)return null;
+  let dt=new Date(y,m-1,day);
+  if(dt.getFullYear()!==y||dt.getMonth()!==m-1||dt.getDate()!==day)return null;
+  return dt;
+}
+function age(d){
+  let b=parseBirthDate(d);
+  if(!b)return"";
+  let n=new Date();
+  let a=n.getFullYear()-b.getFullYear();
+  if(n.getMonth()<b.getMonth()||(n.getMonth()===b.getMonth()&&n.getDate()<b.getDate()))a--;
+  return a>=0?a:"";
+}
+function setPage(p){if(!isConfigured)p="settings";if(isConfigured&&!authenticated)return;page=p;editId=null;document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===page));render()}
+document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>setPage(b.dataset.page));
+
+function render(){
+  const a=document.getElementById("app");
+  if(!isConfigured && page!=="settings") page="settings";
+  if(isConfigured && !authenticated){ return; }
+  document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===page)); 
+  if(page==="home")a.innerHTML=home(); 
+  else if(page==="add"){
+    a.innerHTML=form();
+    setTimeout(()=>{let p=people.find(x=>x.id===editId);if(p?.birth)setBirthFields(p.birth);else updateBirth()},0);
+  } 
+  else if(page==="manage")a.innerHTML=manage(); 
+  else if(page==="help")a.innerHTML=helpForm(); 
+  else if(page==="reports")a.innerHTML=reports();
+  else if(page==="settings")a.innerHTML=settingsPage();
+}
+
+function activePeople(){return people.filter(p=>p.status==="active")}
+function home(){
+let a=activePeople(),urgent=a.filter(p=>p.priority==="เร่งด่วน").length;
+return `<section><div class="grid">
+<div class="stat"><div class="l">👥 ผู้ขอรับความช่วยเหลือ</div><div class="n">${a.length}</div></div>
+${types.map(t=>`<div class="stat"><div class="l">📌 ${esc(t)}</div><div class="n">${a.filter(p=>p.types?.includes(t)).length}</div></div>`).join("")}
+<div class="stat"><div class="l">🔴 เคสเร่งด่วน</div><div class="n">${urgent}</div></div>
+</div>
+<div class="card"><h2>เมนูหลัก</h2><div class="actions">
+<button class="action" onclick="setPage('add')">➕ <b>เพิ่มข้อมูล</b><span>ถ่ายบัตร/กรอกข้อมูลผู้รับความช่วยเหลือ</span></button>
+<button class="action" onclick="setPage('manage')">✏️ <b>จัดการข้อมูล</b><span>ค้นหา แก้ไข ย้าย หรือบันทึกสถานะ</span></button>
+<button class="action" onclick="setPage('help')">🤝 <b>บันทึกการช่วยเหลือ</b><span>เก็บประวัติการช่วยเหลือรายบุคคล</span></button>
+<button class="action" onclick="setPage('reports')">📊 <b>รายงาน</b><span>ดูสถิติและแยกตามชุมชน</span></button>
+<button class="action" onclick="setPage('settings')">⚙️ <b>ตั้งค่าระบบ</b><span>เปลี่ยนชื่อชุมชน, URL และโซนย่อย</span></button>
+</div></div>
+<div class="card"><h3>🔴 เคสเร่งด่วน</h3>${a.filter(p=>p.priority==="เร่งด่วน").slice(0,8).map(personRow).join("")||'<div class="empty">ยังไม่มีเคสเร่งด่วน</div>'}</div></section>`}
+function personRow(p){return `<div style="padding:10px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;align-items:center"><div><b>${esc(p.prefix)}${esc(p.first)} ${esc(p.last)}</b><div class="muted">${esc(p.community)} • ${esc((p.types||[]).join(" / "))}</div></div><span class="badge ${p.priority==="เร่งด่วน"?"urgent":"normal"}">${esc(p.priority)}</span></div>`}
+
+function form(){
+let p=people.find(x=>x.id===editId)||{prefix:"",first:"",last:"",idcard:"",birth:"",address:"",phone:"",relative:"",relativePhone:"",community:"",otherCommunity:"",types:[],priority:"ทั่วไป",note:"",front:"",back:""};
+return `<div class="card"><h2>${editId?"✏️ แก้ไขข้อมูล":"➕ เพิ่มข้อมูลผู้รับความช่วยเหลือ"}</h2>
+<div class="card" style="margin-top:0"><h3>1. บัตรประชาชน</h3><div class="idphotos">
+    <div class="photo">📷 ด้านหน้า
+      <div class="btns">
+        <button type="button" class="btn primary" onclick="openIdCamera('front')">📷 เปิดกล้อง</button>
+        <button type="button" class="btn" onclick="openIdGallery('front')">🖼️ เลือกรูป</button>
+      </div>
+      <input id="frontCamera" type="file" accept="image/*" capture="environment" class="hidden" onchange="photo(event,'front')">
+      <input id="frontGallery" type="file" accept="image/*" class="hidden" onchange="photo(event,'front')">
+      <div id="frontPreview">${p.front?`<img src="${p.front}">`:""}</div>
+    </div>
+    <div class="photo">📷 ด้านหลัง
+      <div class="btns">
+        <button type="button" class="btn primary" onclick="openIdCamera('back')">📷 เปิดกล้อง</button>
+        <button type="button" class="btn" onclick="openIdGallery('back')">🖼️ เลือกรูป</button>
+      </div>
+      <input id="backCamera" type="file" accept="image/*" capture="environment" class="hidden" onchange="photo(event,'back')">
+      <input id="backGallery" type="file" accept="image/*" class="hidden" onchange="photo(event,'back')">
+      <div id="backPreview">${p.back?`<img src="${p.back}">`:""}</div>
+    </div>
+    </div><div class="btns"><button class="btn" onclick="tryOCR()">🔎 ทดลองอ่านข้อมูลจากภาพ (OCR)</button></div><div id="ocrmsg" class="muted" style="margin-top:8px"></div></div>
+<div class="row">
+<div><label>คำนำหน้า</label><select id="prefix"><option value="">เลือก</option>${["นาย","นาง","นางสาว"].map(x=>`<option value="${x}" ${p.prefix===x?"selected":""}>${x}</option>`).join("")}</select></div>
+<div><label>ชื่อ *</label><input id="first" value="${esc(p.first)}" required></div>
+<div><label>นามสกุล *</label><input id="last" value="${esc(p.last)}" required></div>
+<div><label>เลขบัตรประชาชน</label><input id="idcard" inputmode="numeric" maxlength="13" value="${esc(p.idcard)}"></div>
+<div><label>วันเกิด (พ.ศ.)</label><div class="dateBE">
+<select id="birthDay" onchange="updateBirth()"><option value="">วัน</option>${Array.from({length:31},(_,i)=>`<option value="${String(i+1).padStart(2,"0")}">${i+1}</option>`).join("")}</select>
+<select id="birthMonth" onchange="updateBirth()"><option value="">เดือน</option>${["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"].map((m,i)=>`<option value="${String(i+1).padStart(2,"0")}">${m}</option>`).join("")}</select>
+<input id="birthYearBE" inputmode="numeric" maxlength="4" placeholder="ปี พ.ศ." value="${p.birth?Number(p.birth.slice(0,4))+543:""}" oninput="updateBirth()">
+</div><input id="birth" type="hidden" value="${esc(p.birth)}"></div>
+<div><label>อายุ (ปี)</label><input id="age" value="${age(p.birth)}" readonly></div>
+<div class="full"><label>ที่อยู่</label><textarea id="address">${esc(p.address)}</textarea></div>
+<div><label>เบอร์โทรศัพท์</label><input id="phone" inputmode="tel" value="${esc(p.phone)}"></div>
+<div><label>ผู้ติดต่อ/ญาติ</label><input id="relative" value="${esc(p.relative)}"></div>
+<div><label>เบอร์โทรญาติ</label><input id="relativePhone" inputmode="tel" value="${esc(p.relativePhone)}"></div>
+<div><label>ชุมชน/โซน *</label><select id="community" onchange="toggleOther()"><option value="">เลือกชุมชน</option>${communities.map(c=>`<option ${p.community===c?"selected":""}>${esc(c)}</option>`).join("")}</select></div>
+<div id="otherBox" class="${p.community==="อื่นๆ"?"":"hidden"}"><label>ระบุชุมชน</label><input id="otherCommunity" value="${esc(p.otherCommunity)}"></div>
+<div class="full"><label>ขอรับความช่วยเหลือ *</label><div class="choice">${types.map(t=>`<label><input type="checkbox" name="types" value="${esc(t)}" ${(p.types||[]).includes(t)?"checked":""}>${esc(t)}</label>`).join("")}</div></div>
+<div class="full"><label>พิจารณาการช่วยเหลือ *</label><div class="choice"><label><input type="radio" name="priority" value="เร่งด่วน" ${p.priority==="เร่งด่วน"?"checked":""}> 🔴 เร่งด่วน</label><label><input type="radio" name="priority" value="ทั่วไป" ${p.priority==="ทั่วไป"?"checked":""}> 🟢 ทั่วไป</label></div></div>
+<div class="full"><label>หมายเหตุ</label><textarea id="note">${esc(p.note)}</textarea></div>
+</div>
+<div class="btns"><button class="btn" onclick="setPage('home')">ยกเลิก</button><button class="btn primary" onclick="savePerson()">✅ ${editId?"บันทึกการแก้ไข":"ยืนยันบันทึกข้อมูล"}</button></div></div>`}
+
+function updateBirth(){
+  const day=document.getElementById("birthDay")?.value||"";
+  const month=document.getElementById("birthMonth")?.value||"";
+  const yearBE=(document.getElementById("birthYearBE")?.value||"").replace(/\D/g,"");
+  const ageBox=document.getElementById("age");
+  const birthBox=document.getElementById("birth");
+
+  if(day && month && yearBE.length===4){
+    const gy=Number(yearBE)-543;
+    const iso=`${gy}-${month}-${day}`;
+    const b=parseBirthDate(iso);
+
+    if(b && gy>=1900 && gy<=new Date().getFullYear()){
+      birthBox.value=iso;
+      ageBox.value=age(iso);
+      return;
+    }
+  }
+  birthBox.value="";
+  ageBox.value="";
+}
+function setBirthFields(iso){
+  if(!iso)return;
+  let [y,m,d]=iso.split("-");
+  const day=document.getElementById("birthDay"), month=document.getElementById("birthMonth"), year=document.getElementById("birthYearBE");
+  if(day&&month&&year){
+    day.value=d; month.value=m; year.value=Number(y)+543;
+    document.getElementById("birth").value=iso;
+    document.getElementById("age").value=age(iso);
+  }
+}
+function openHelpCamera(n){document.getElementById("helpCamera"+n)?.click()}
+function openHelpGallery(n){document.getElementById("helpGallery"+n)?.click()}
+function helpPhoto(e,n){
+  let f=e.target.files[0]; if(!f)return;
+  let r=new FileReader();
+  r.onload=()=>{
+    let img=new Image();
+    img.onload=()=>{
+      let c=document.createElement("canvas"),max=1200,s=Math.min(1,max/img.width);
+      c.width=img.width*s;c.height=img.height*s;
+      c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+      let data=c.toDataURL("image/jpeg",.75);
+      let box=document.getElementById("helpPhotoPreview"+n);
+      box.innerHTML=`<img src="${data}"><div class="muted" style="margin-top:6px">บันทึกเป็นรูปการช่วยเหลือ ${n}</div>`;
+      box.dataset.data=data;
+    };
+    img.src=r.result;
+  };
+  r.readAsDataURL(f);
+}
+function toggleOther(){document.getElementById("otherBox")?.classList.toggle("hidden",document.getElementById("community").value!=="อื่นๆ")}
+function openIdCamera(which){document.getElementById(which+"Camera")?.click();}
+function openIdGallery(which){document.getElementById(which+"Gallery")?.click();}
+function photo(e,which){
+  let f=e.target.files[0]; if(!f)return;
+  let r=new FileReader();
+  r.onload=()=>{
+    let img=new Image();
+    img.onload=()=>{
+      let c=document.createElement("canvas"),max=900,s=Math.min(1,max/img.width);
+      c.width=img.width*s;c.height=img.height*s;
+      c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+      let data=c.toDataURL("image/jpeg",.7);
+      let box=document.getElementById(which+"Preview");
+      box.innerHTML=`<img src="${data}">`;
+      box.dataset.data=data;
+    };
+    img.src=r.result;
+  };
+  r.readAsDataURL(f);
+}
+async function tryOCR(){
+let m=document.getElementById("ocrmsg");m.textContent="กำลังเตรียม OCR…";
+if(!window.Tesseract){let s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";document.head.appendChild(s);await new Promise((res,rej)=>{s.onload=res;s.onerror=rej})}
+let img=document.querySelector("#frontPreview img");if(!img){m.textContent="กรุณาถ่าย/เลือกภาพบัตรด้านหน้าก่อน";return}
+m.textContent="กำลังอ่านภาพ อาจใช้เวลาสักครู่…";
+try{let {data}=await Tesseract.recognize(img.src,"tha+eng");document.getElementById("note").value=(document.getElementById("note").value?document.getElementById("note").value+"\n":"")+"[OCR ข้อความดิบ] "+data.text; m.textContent="อ่านภาพเสร็จแล้ว ระบบใส่ข้อความ OCR ไว้ในหมายเหตุเพื่อให้ตรวจสอบก่อนนำไปใช้";}catch(e){m.textContent="OCR ไม่สำเร็จ กรุณากรอกข้อมูลด้วยตนเอง"}}
+function savePerson(){
+let first=document.getElementById("first").value.trim(),last=document.getElementById("last").value.trim(),community=document.getElementById("community").value,ts=[...document.querySelectorAll('input[name="types"]:checked')].map(x=>x.value),priority=document.querySelector('input[name="priority"]:checked')?.value;
+if(!first||!last||!community||!ts.length||!priority){alert("กรุณากรอกข้อมูลที่มีเครื่องหมาย * ให้ครบ");return}
+let front=document.getElementById("frontPreview")?.dataset.data || document.querySelector("#frontPreview img")?.src || "";
+let back=document.getElementById("backPreview")?.dataset.data || document.querySelector("#backPreview img")?.src || "";
+let data={id:editId||id("P"),prefix:document.getElementById("prefix").value,first,last,idcard:document.getElementById("idcard").value.trim(),birth:document.getElementById("birth").value,address:document.getElementById("address").value.trim(),phone:document.getElementById("phone").value.trim(),relative:document.getElementById("relative").value.trim(),relativePhone:document.getElementById("relativePhone").value.trim(),community,otherCommunity:document.getElementById("otherCommunity")?.value.trim()||"",types:ts,priority,note:document.getElementById("note").value.trim(),front,back,status:"active",createdAt:editId?(people.find(x=>x.id===editId)?.createdAt||new Date().toISOString()):new Date().toISOString(),updatedAt:new Date().toISOString()};
+if(editId){let i=people.findIndex(x=>x.id===editId);people[i]=data}else people.push(data);save().then(()=>{alert(settings.cloudEnabled?"✅ บันทึกข้อมูลและส่งขึ้น Cloud สำเร็จ":"✅ บันทึกข้อมูล Offline สำเร็จ");setPage("manage")}).catch(e=>alert("บันทึกไม่สำเร็จ: "+e.message))}
+
+function manage(){
+let a=activePeople();return `<div class="card"><h2>✏️ จัดการข้อมูล</h2><div class="searchbar"><input id="q" placeholder="🔎 ค้นหาชื่อ / เลขบัตร / เบอร์โทร" oninput="filterPeople()"><select id="cq" onchange="filterPeople()"><option value="">ทุกชุมชน/โซน</option>${communities.map(c=>`<option>${esc(c)}</option>`).join("")}</select><select id="tq" onchange="filterPeople()"><option value="">ทุกประเภท</option>${types.map(t=>`<option>${esc(t)}</option>`).join("")}</select><select id="pq" onchange="filterPeople()"><option value="">ทุกระดับ</option><option>เร่งด่วน</option><option>ทั่วไป</option></select></div>
+<div id="peopleTable" class="tablewrap" style="margin-top:12px">${peopleTable(a)}</div></div>`}
+
+function filterPeople(){let q=(document.getElementById("q").value||"").toLowerCase(),c=document.getElementById("cq").value,t=document.getElementById("tq").value,p=document.getElementById("pq").value;let a=activePeople().filter(x=>(`${x.first} ${x.last} ${x.idcard} ${x.phone}`).toLowerCase().includes(q)&&(!c||x.community===c)&&(!t||(x.types||[]).includes(t))&&(!p||x.priority===p));document.getElementById("peopleTable").innerHTML=peopleTable(a)}
+
+function peopleTable(a){
+  if(!a.length)return '<div class="empty">ไม่พบข้อมูล</div>';
+  return `<table class="table"><thead><tr>
+    <th>ชื่อ-นามสกุล</th><th>ชุมชน/โซน</th><th>ประเภท</th><th>ระดับ</th>
+    <th>การช่วยเหลือ</th><th>บัตรประชาชน</th><th>รูปการช่วยเหลือ</th><th>จัดการข้อมูล</th>
+  </tr></thead><tbody>${a.map(p=>{
+    let hs=help.filter(h=>h.personId===p.id);
+    let photoCount=hs.reduce((n,h)=>n+(h.photos||[]).length,0);
+    let last=hs.slice().sort((x,y)=>(y.date||"").localeCompare(x.date||""))[0];
+    return `<tr>
+      <td data-label="ชื่อ-นามสกุล"><b>${esc(p.prefix)}${esc(p.first)} ${esc(p.last)}</b><br><span class="muted">${esc(p.id)}</span></td>
+      <td data-label="ชุมชน/โซน">${esc(p.community==="อื่นๆ"?p.otherCommunity:p.community)}</td>
+      <td data-label="ประเภท">${esc((p.types||[]).join(", "))}</td>
+      <td data-label="ระดับ"><span class="badge ${p.priority==="เร่งด่วน"?"urgent":"normal"}">${esc(p.priority)}</span></td>
+      <td data-label="การช่วยเหลือ"><b>${hs.length}</b> ครั้ง${last?`<br><span class="muted">ล่าสุด ${esc(last.date)}</span>`:""}</td>
+      <td data-label="บัตรประชาชน">${p.front||p.back?`<button class="btn" type="button" onclick="showIdPhotos('${p.id}')">🪪 ดูบัตรประชาชน</button>`:"<span class='muted'>ไม่มีรูป</span>"}</td>
+      <td data-label="รูปการช่วยเหลือ">${photoCount?`<button class="btn" type="button" onclick="showHelpPhotos('${p.id}')">📷 ดูรูป ${photoCount} รูป</button>`:"<span class='muted'>ไม่มีรูป</span>"}</td>
+      <td data-label="จัดการข้อมูล"><button class="btn" onclick="editPerson('${p.id}')">ข้อมูล/แก้ไข</button><button class="btn danger" onclick="statusPerson('${p.id}')">สถานะ</button></td>
+    </tr>`;
+  }).join("")}</tbody></table>`;
+}
+
+function openMediaModal(title, cards){
+  const modal=document.getElementById("mediaModal");
+  const titleEl=document.getElementById("mediaTitle");
+  const content=document.getElementById("mediaContent");
+  if(!modal||!content)return;
+  titleEl.textContent=title||"รูปภาพ";
+  content.innerHTML=`<div class="mediaGrid">${cards.join("")}</div>`;
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden","false");
+  document.body.style.overflow="hidden";
+}
+function closeMediaModal(){
+  const modal=document.getElementById("mediaModal");
+  if(!modal)return;
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden","true");
+  document.body.style.overflow="";
+  document.getElementById("mediaContent").innerHTML="";
+}
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeMediaModal()});
+
+function showIdPhotos(pid){
+  let p=people.find(x=>x.id===pid);
+  if(!p||(!p.front&&!p.back)){alert("ยังไม่มีรูปบัตรประชาชน");return}
+  let cards=[];
+  if(p.front)cards.push(`<div class="mediaCard"><h3>ด้านหน้า</h3><img src="${p.front}" alt="บัตรประชาชนด้านหน้า"></div>`);
+  if(p.back)cards.push(`<div class="mediaCard"><h3>ด้านหลัง</h3><img src="${p.back}" alt="บัตรประชาชนด้านหลัง"></div>`);
+  openMediaModal(`🪪 บัตรประชาชน • ${esc(p.prefix)}${esc(p.first)} ${esc(p.last)}`,cards);
+}
+
+function showHelpPhotos(pid){
+  let p=people.find(x=>x.id===pid), hs=help.filter(h=>h.personId===pid);
+  if(!p||!hs.length){alert("ยังไม่มีประวัติการช่วยเหลือ");return}
+  let lines=hs.flatMap(h=>(h.photos||[]).map(ph=>({date:h.date,types:(h.types||[]).join(", "),agency:h.agency||"-",data:ph.data,name:ph.name||"รูปการช่วยเหลือ"})));
+  if(!lines.length){alert("เคสนี้ยังไม่มีรูปการช่วยเหลือ");return}
+  let cards=lines.map(x=>`<div class="mediaCard"><img src="${x.data}" alt="${esc(x.name)}"><b>${esc(x.date||"-")}</b><div class="muted">${esc(x.types)} • ${esc(x.agency)}</div><div class="muted">${esc(x.name)}</div></div>`);
+  openMediaModal(`📷 รูปการช่วยเหลือ • ${esc(p.prefix)}${esc(p.first)} ${esc(p.last)}`,cards);
+}
+
+function editPerson(i){
+  let p=people.find(x=>x.id===i);
+  if(!p){alert("ไม่พบข้อมูลที่ต้องการแก้ไข");return}
+  editId=i;
+  page="add";
+  document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.page==="add"));
+  render();
+  setTimeout(()=>setBirthFields(p.birth||""),0);
+}
+function statusPerson(i){
+  let p=people.find(x=>x.id===i);
+  if(!p)return;
+  let s=prompt("ระบุสถานะ: เสียชีวิต / ย้าย / อื่นๆ","ย้าย");
+  if(!s)return;
+  s=s.trim();
+  if(!["เสียชีวิต","ย้าย","อื่นๆ"].includes(s)){alert("กรุณาใช้ เสียชีวิต, ย้าย หรือ อื่นๆ");return}
+  let note=prompt("หมายเหตุเพิ่มเติม","")||"";
+  p.status="inactive";
+  statuses.push({id:id("ST"),personId:i,name:p.first+" "+p.last,status:s,note,date:new Date().toISOString()});
+  save().then(()=>render()).catch(e=>alert("บันทึกไม่สำเร็จ: "+e.message));
+}
+
+function helpForm(){
+  let recent=help.slice().reverse().slice(0,3);
+  return `<div class="card"><h2>🤝 บันทึกการให้ความช่วยเหลือ</h2>
+  <div class="row">
+  <div><label>ชุมชน/โซน *</label><select id="hc" onchange="loadHelpNames()"><option value="">เลือกชุมชน</option>${communities.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("")}</select></div>
+  <div><label>ชื่อ-นามสกุล *</label><select id="hp"><option value="">เลือกชุมชนก่อน</option></select></div>
+  <div class="full"><label>การให้ความช่วยเหลือเบื้องต้น *</label><div class="choice">${helps.map(x=>`<label><input type="checkbox" name="helpType" value="${esc(x)}">${esc(x)}</label>`).join("")}</div></div>
+  <div><label>วันที่ช่วยเหลือ *</label><input id="hd" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
+  <div><label>หน่วยงาน/ผู้ให้ความช่วยเหลือ</label><input id="ha"></div>
+  <div class="full"><label>รูปถ่ายการให้ความช่วยเหลือ (สูงสุด 3 รูป)</label>
+  <div class="helpPhotos">
+    <div class="helpPhoto">📷 รูปที่ 1<div class="btns"><button type="button" class="btn primary" onclick="openHelpCamera(1)">📷 เปิดกล้อง</button><button type="button" class="btn" onclick="openHelpGallery(1)">🖼️ เลือกรูป</button></div><input id="helpCamera1" type="file" accept="image/*" capture="environment" class="hidden" onchange="helpPhoto(event,1)"><input id="helpGallery1" type="file" accept="image/*" class="hidden" onchange="helpPhoto(event,1)"><div id="helpPhotoPreview1"></div></div>
+    <div class="helpPhoto">📷 รูปที่ 2<div class="btns"><button type="button" class="btn primary" onclick="openHelpCamera(2)">📷 เปิดกล้อง</button><button type="button" class="btn" onclick="openHelpGallery(2)">🖼️ เลือกรูป</button></div><input id="helpCamera2" type="file" accept="image/*" capture="environment" class="hidden" onchange="helpPhoto(event,2)"><input id="helpGallery2" type="file" accept="image/*" class="hidden" onchange="helpPhoto(event,2)"><div id="helpPhotoPreview2"></div></div>
+    <div class="helpPhoto">📷 รูปที่ 3<div class="btns"><button type="button" class="btn primary" onclick="openHelpCamera(3)">📷 เปิดกล้อง</button><button type="button" class="btn" onclick="openHelpGallery(3)">🖼️ เลือกรูป</button></div><input id="helpCamera3" type="file" accept="image/*" capture="environment" class="hidden" onchange="helpPhoto(event,3)"><input id="helpGallery3" type="file" accept="image/*" class="hidden" onchange="helpPhoto(event,3)"><div id="helpPhotoPreview3"></div></div>
+  </div></div>
+  <div class="full"><label>รายละเอียด / หมายเหตุ</label><textarea id="hn"></textarea></div>
+  </div>
+  <div class="btns"><button type="button" class="btn primary" onclick="saveHelp()">✅ บันทึกการช่วยเหลือ</button></div></div>
+  <div class="card"><h3>ประวัติการช่วยเหลือล่าสุด</h3>${recent.map(h=>`<div style="padding:10px 0;border-bottom:1px solid var(--line)"><b>${esc(h.name||"-")}</b> — ${esc((h.types||[]).join(", "))}<div class="muted">${esc(h.date||"-")} • ${esc(h.agency||"-")}</div>${(h.photos||[]).length?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">${h.photos.map(ph=>`<div><img src="${ph.data}" alt="${esc(ph.name||"รูปการช่วยเหลือ")}" style="width:110px;height:90px;object-fit:cover;border-radius:8px;border:1px solid var(--line)"><div class="muted" style="font-size:11px">${esc(ph.name||"รูปการช่วยเหลือ")}</div></div>`).join("")}</div>`:""}</div>`).join("")||'<div class="empty">ยังไม่มีประวัติ</div>'}</div>`;
+}
+
+function loadHelpNames(){
+  let c=document.getElementById("hc")?.value||"";
+  let hp=document.getElementById("hp");
+  if(!hp)return;
+  let list=activePeople().filter(p=>p.community===c);
+  hp.innerHTML='<option value="">เลือกชื่อ</option>'+list.map(p=>`<option value="${esc(p.id)}">${esc(p.first)} ${esc(p.last)}</option>`).join("");
+}
+
+function saveHelp(){
+  let pid=document.getElementById("hp")?.value||"";
+  let ts=[...document.querySelectorAll('input[name="helpType"]:checked')].map(x=>x.value);
+  if(!pid||!ts.length){alert("กรุณาเลือกชุมชน ชื่อ และประเภทการช่วยเหลือ");return}
+  let p=people.find(x=>x.id===pid);
+  if(!p){alert("ไม่พบข้อมูลผู้รับความช่วยเหลือ");return}
+  let photos=[1,2,3].map(n=>document.getElementById("helpPhotoPreview"+n)?.dataset.data||"").filter(Boolean)
+    .map((data,i)=>({name:`help-${Date.now()}-${i+1}.jpg`,data,addedAt:new Date().toISOString()}));
+  help.push({id:id("HELP"),personId:pid,name:p.first+" "+p.last,community:p.community,types:ts,date:document.getElementById("hd").value,agency:document.getElementById("ha").value.trim(),note:document.getElementById("hn").value.trim(),photos});
+  save().then(()=>{alert(settings.cloudEnabled?"✅ บันทึกการช่วยเหลือและส่งขึ้น Cloud สำเร็จ":"✅ บันทึกการช่วยเหลือ Offline สำเร็จ");render()}).catch(e=>alert("บันทึกไม่สำเร็จ: "+e.message));
+}
+
+function reports(){
+let a=activePeople();return `<div class="card"><h2>📊 รายงาน / Dashboard</h2><div class="grid">${types.map(t=>`<div class="stat"><div class="l">${esc(t)}</div><div class="n">${a.filter(p=>p.types?.includes(t)).length}</div></div>`).join("")}</div></div>
+<div class="card"><h3>สรุปตามชุมชน/โซน</h3><div class="tablewrap"><table class="table"><thead><tr><th>ชุมชน/โซน</th><th>จำนวน</th><th>เร่งด่วน</th></tr></thead><tbody>${communities.map(c=>{let x=a.filter(p=>p.community===c);return `<tr><td>${esc(c)}</td><td>${x.length}</td><td>${x.filter(p=>p.priority==="เร่งด่วน").length}</td></tr>`}).join("")}</tbody></table></div></div>
+<div class="card"><h3>สถิติการเปลี่ยนสถานะ</h3><p>☠️ เสียชีวิต: <b>${statuses.filter(x=>x.status==="เสียชีวิต").length}</b></p><p>🚚 ย้ายออก: <b>${statuses.filter(x=>x.status==="ย้าย").length}</b></p><p>📝 อื่นๆ: <b>${statuses.filter(x=>x.status==="อื่นๆ").length}</b></p><p>🤝 รายการช่วยเหลือทั้งหมด: <b>${help.length}</b></p></div>`}
+
+// หน้าสำหรับตั้งค่าระบบจากหน้าจอ (ไม่ต้องแก้โค้ด)
+function settingsPage(){applyExistingAuthLock();return `<div class="card"><h2>⚙️ ตั้งค่าระบบและฐานข้อมูล</h2><div class="alert ${isConfigured?"ok":""}">${isConfigured?`🟢 ระบบพร้อมใช้งาน • ฐานข้อมูลหลัก: ${settings.cloudEnabled?"☁️ Cloud":"📱 ไฟล์ในโฟลเดอร์ Offline"}`:"🟡 ยังไม่ได้เปิดใช้งาน • กรุณาเลือกฐานข้อมูลหลักและกด “บันทึกและเปิดใช้งาน”"}</div><div class="card" style="margin-top:0"><h3>📁 ฐานข้อมูลหลัก</h3><p class="muted">📱 Offline = ไฟล์ <b>community-care-data.json</b> ในโฟลเดอร์ที่คุณเลือก • ☁️ Online = Google Apps Script Web App URL ระบบจะยังไม่ถือว่าเปิดใช้งานจนกว่าจะตรวจสอบแหล่งข้อมูลสำเร็จ</p><div class="row"><div><label>สถานะ</label><input value="${isConfigured?"🟢 พร้อมใช้งาน":"🟡 ยังไม่ได้ตั้งค่า"}" readonly></div><div><label>โฟลเดอร์</label><input value="${esc(selectedFolderName||"ยังไม่ได้เลือก")}" readonly></div></div><div class="btns"><button class="btn" onclick="chooseDatabaseFolder()">📁 เลือกโฟลเดอร์</button><button class="btn" onclick="backupDatabase()">💾 สำรองข้อมูล</button><button class="btn" onclick="restoreDatabase()">♻️ กู้คืนข้อมูล</button></div></div><div class="row" style="margin-top:14px"><div class="full"><label>รายละเอียดใต้หัวข้อ</label><input id="setBrandSub" value="${esc(settings.brandSub)}"></div><div class="full"><label>Google Apps Script Web App URL (ไม่ต้องกรอกถ้าใช้ Offline)</label><input id="setApiUrl" value="${esc(settings.apiUrl||"")}"></div><div class="full"><label>☁️ Cloud Sync</label><div class="choice"><label><input id="setCloudEnabled" type="checkbox" ${settings.cloudEnabled&&settings.apiUrl?"checked":""}> เปิดใช้งาน Cloud</label></div><span class="muted" style="font-size:12px">เปิด Cloud แล้ว ระบบจะส่งข้อมูลขึ้น Cloud อัตโนมัติเมื่อมีการบันทึกข้อมูล • หากใช้ Cloudflare ต้อง Deploy functions/api/cloud.js พร้อมเว็บไซต์</span></div><div class="full"><label>📧 Email สำหรับเข้าสู่ระบบ</label><input id="setAuthEmail" data-existing-auth-lock="true" type="email" autocomplete="username" value="${esc(settings.auth?.email||"")}" placeholder="example@email.com"></div><div class="full"><label>🔑 Password สำหรับเข้าสู่ระบบ</label><input id="setAuthPassword" type="password" autocomplete="new-password" value="" placeholder="${settings.auth?.hash?"****** (มีรหัสเดิมอยู่แล้ว)":"ตั้งรหัสผ่านครั้งแรก"}"><div class="hint">${settings.auth?.hash?"มีรหัสผ่านเดิมอยู่แล้ว • ระบบจะไม่แสดงรหัสจริง หากไม่กรอกรหัสใหม่ ระบบจะใช้รหัสเดิม":"กรอกรหัสผ่านเพื่อสร้างบัญชีการใช้งานของระบบ"}</div></div><div class="full"><label>รายชื่อชุมชน / โซนย่อย</label><textarea id="setCommunities">${esc(communities.join(", "))}</textarea><div class="hint">ตัวอย่าง: ซอย1, ซอย2, ซอย3, อื่นๆ</div></div><div class="hint">รายชื่อชุมชน / โซนย่อยเป็นข้อมูลหลักของระบบ • รายชื่อเดิมห้ามลบหรือแก้ไข • สามารถเพิ่มรายชื่อใหม่ได้ภายหลัง • ระบบจะบันทึกลงฐานข้อมูลทันที แม้ยังไม่มีข้อมูลบัตรประชาชน</div><div class="full"><label>ประเภทผู้ขอรับความช่วยเหลือ</label><textarea id="setTypes">${esc(types.join(", "))}</textarea></div><div class="full"><label>ประเภทการช่วยเหลือ / สิ่งของ</label><textarea id="setHelps">${esc(helps.join(", "))}</textarea></div></div><div class="btns" style="margin-top:20px"><button class="btn primary" onclick="saveSettings()">💾 บันทึกและเปิดใช้งาน</button><button class="btn danger" onclick="resetSettings()">🔄 ล้างการตั้งค่าเครื่อง</button></div></div>`}
+async function chooseDatabaseFolder(){
+  if(!window.showDirectoryPicker){alert("กรุณาใช้ Chrome หรือ Edge รุ่นปัจจุบัน");return}
+  try{
+    const h=await showDirectoryPicker({mode:"readwrite"});
+    if(!(await ensureFolderPermission(h,true))) throw new Error("ไม่ได้รับสิทธิ์อ่าน/เขียนโฟลเดอร์");
+    selectedFolderName=h.name||"CommunityCareDB";
+    settings.folderName=selectedFolderName;
+    settings.folderHandle=h;
+    const hasOld=await loadFolderData(false);
+    await persistSettings();
+    render();
+    alert(hasOld?"✅ ตรวจพบไฟล์ข้อมูลเดิม\nโหลดข้อมูลเดิมแล้ว และเมื่อบันทึก ระบบจะเขียนกลับไปยังไฟล์นี้":"📁 เลือกโฟลเดอร์สำเร็จ\nยังไม่พบไฟล์ข้อมูล ระบบจะสร้าง community-care-data.json เมื่อบันทึกข้อมูลครั้งแรก");
+  }catch(e){if(e.name!=="AbortError")alert("เลือกโฟลเดอร์ไม่สำเร็จ: "+e.message)}
+}
+async function backupDatabase(){if(!isConfigured){alert("กรุณาตั้งค่าระบบก่อน");return}const d={version:1,exportedAt:new Date().toISOString(),settings,people,help,statuses};const b=new Blob([JSON.stringify(d,null,2)],{type:"application/json"}),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download="community-care-backup-"+new Date().toISOString().slice(0,10)+".json";a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+function restoreDatabase(){if(!isConfigured){alert("กรุณาตั้งค่าระบบก่อน");return}const i=document.createElement("input");i.type="file";i.accept=".json,application/json";i.onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!Array.isArray(d.people)||!Array.isArray(d.help)||!Array.isArray(d.statuses))throw new Error("ไฟล์สำรองไม่ถูกต้อง");if(!confirm("กู้คืนข้อมูลหรือไม่? ข้อมูล Offline ปัจจุบันจะถูกแทนที่"))return;people=d.people;help=d.help;statuses=d.statuses;await save();alert("✅ กู้คืนข้อมูลสำเร็จ");render()}catch(x){alert("กู้คืนไม่สำเร็จ: "+x.message)}};i.click()}
+async function bytesToHex(buf){return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("")}
+function randomHex(bytes=16){const a=new Uint8Array(bytes);crypto.getRandomValues(a);return Array.from(a).map(b=>b.toString(16).padStart(2,"0")).join("")}
+async function hashPassword(password,saltHex){const enc=new TextEncoder();const salt=Uint8Array.from((saltHex.match(/.{2}/g)||[]).map(x=>parseInt(x,16)));const key=await crypto.subtle.importKey("raw",enc.encode(password),"PBKDF2",false,["deriveBits"]);const bits=await crypto.subtle.deriveBits({name:"PBKDF2",salt,iterations:120000,hash:"SHA-256"},key,256);return bytesToHex(bits)}
+async function createAuth(email,password){const salt=randomHex(16);return {email:email.toLowerCase(),salt,hash:await hashPassword(password,salt)}}
+async function verifyLocalAuth(email,password){const a=settings.auth;if(!a?.email||!a?.hash||!a?.salt)return false;return a.email===email.toLowerCase() && (await hashPassword(password,a.salt))===a.hash}
+function authHasAccount(){return !!(settings.auth?.email&&settings.auth?.hash&&settings.auth?.salt)}
+function showLoginGate(){authMode="login";authenticated=false;const old=document.getElementById("authGate");if(old)old.remove();const d=document.createElement("div");d.id="authGate";d.className="authGate";d.innerHTML=authCardLogin();document.body.appendChild(d)}
+function authCardLogin(){return `<div class="authCard"><h2>🔐 เข้าสู่ระบบ Community Care</h2><p class="muted">กรุณาใส่ Email และ Password ที่ตั้งค่าไว้ก่อนเริ่มใช้งานทุกครั้ง</p><div><label>Email</label><input id="loginEmail" data-existing-auth-lock="true" type="email" autocomplete="username" value="${esc(settings.auth?.email||"")}" placeholder="example@email.com"></div><div style="margin-top:10px"><label>Password</label><input id="loginPassword" type="password" autocomplete="current-password" placeholder="Password"></div><div id="authMsg"></div><div class="authActions"><button class="btn primary" onclick="doLogin()">🔓 เข้าสู่ระบบ</button><button class="btn" onclick="showForgotGate()">📧 ลืมรหัสผ่าน</button></div></div>`}
+function showForgotGate(){const g=document.getElementById("authGate");if(!g)return;g.innerHTML=`<div class="authCard"><h2>📧 ลืมรหัสผ่าน</h2><p class="muted">ระบบจะส่งรหัสยืนยันไปยัง Email ที่ตั้งค่าไว้ในฐานข้อมูล</p><label>Email</label><input id="forgotEmail" type="email" value="${esc(settings.auth?.email||"")}" placeholder="example@email.com"><div id="authMsg"></div><div class="authActions"><button class="btn primary" onclick="requestPasswordReset()">📨 ส่งรหัสไปที่ Email</button><button class="btn" onclick="showLoginGate()">↩ กลับเข้าสู่ระบบ</button></div></div>`}
+async function doLogin(){
+  const email=document.getElementById("loginEmail").value.trim().toLowerCase();
+  const password=document.getElementById("loginPassword").value;
+  const msg=document.getElementById("authMsg");
+  if(!email || !password){
+    msg.innerHTML='<div class="authError">กรุณากรอก Email และ Password</div>';
+    return;
+  }
+  try{
+    let valid=false;
+    if(settings.cloudEnabled&&settings.apiUrl){
+      const salt=String(settings.auth?.salt||"");
+      if(!salt) throw new Error("ไม่พบข้อมูลความปลอดภัยของบัญชีในฐานข้อมูล");
+      const passwordHash=await hashPassword(password,salt);
+      const d=await cloudRequest("verifyAuth",{email,passwordHash});
+      valid=!!(d && d.ok===true && d.valid===true);
+      if(!valid) throw new Error(d?.error||"Email หรือ Password ไม่ถูกต้อง");
+    }else{
+      valid=await verifyLocalAuth(email,password);
+      if(!valid) throw new Error("Email หรือ Password ไม่ถูกต้อง");
+    }
+    if(valid!==true) throw new Error("Email หรือ Password ไม่ถูกต้อง");
+    authenticated=true;
+    document.getElementById("authGate")?.remove();
+    render();
+  }catch(e){
+    authenticated=false;
+    msg.innerHTML='<div class="authError">❌ '+esc(e.message||"Email หรือ Password ไม่ถูกต้อง")+'</div>';
+  }
+}
+async function requestPasswordReset(){const email=document.getElementById("forgotEmail").value.trim().toLowerCase();const msg=document.getElementById("authMsg");if(!email){msg.innerHTML='<div class="authError">กรุณากรอก Email</div>';return}if(!settings.cloudEnabled||!settings.apiUrl){msg.innerHTML='<div class="authError">การส่งรหัสทาง Email ต้องใช้ฐานข้อมูล Online ที่เชื่อม Google Apps Script</div>';return}try{const d=await cloudRequest("requestPasswordReset",{email});if(!d.ok)throw new Error(d.error||"ส่งรหัสไม่สำเร็จ");const g=document.getElementById("authGate");g.innerHTML=`<div class="authCard"><h2>🔑 ตั้งรหัสผ่านใหม่</h2><p class="muted">ส่งรหัสยืนยันไปยัง ${esc(email)} แล้ว กรุณาตรวจ Email</p><label>รหัสที่ได้รับ</label><input id="resetCode" inputmode="numeric" maxlength="8" placeholder="กรอกรหัส"><label style="margin-top:10px">Password ใหม่</label><input id="resetPassword" type="password" autocomplete="new-password" placeholder="อย่างน้อย 6 ตัวอักษร"><label style="margin-top:10px">ยืนยัน Password ใหม่</label><input id="resetPassword2" type="password" autocomplete="new-password" placeholder="กรอกอีกครั้ง"><div id="authMsg"></div><div class="authActions"><button class="btn primary" onclick="completePasswordReset()">💾 เปลี่ยนรหัสผ่าน</button><button class="btn" onclick="showLoginGate()">↩ กลับ</button></div></div>`}catch(e){msg.innerHTML='<div class="authError">❌ '+esc(e.message)+'</div>'}}
+async function completePasswordReset(){const email=document.getElementById("forgotEmail")?.value?.trim().toLowerCase()||settings.auth?.email||"";const code=document.getElementById("resetCode").value.trim();const p1=document.getElementById("resetPassword").value;const p2=document.getElementById("resetPassword2").value;const msg=document.getElementById("authMsg");if(!code||p1.length<6||p1!==p2){msg.innerHTML='<div class="authError">กรุณาตรวจรหัสยืนยันและ Password ใหม่</div>';return}try{const a=await createAuth(email,p1);const d=await cloudRequest("resetPassword",{email,code,newAuth:a});if(!d.ok)throw new Error(d.error||"เปลี่ยนรหัสผ่านไม่สำเร็จ");settings.auth=a;await persistSettings();showLoginGate();alert("✅ เปลี่ยน Password สำเร็จ กรุณา Login ใหม่")}catch(e){msg.innerHTML='<div class="authError">❌ '+esc(e.message)+'</div>'}}
+
+
+/* ===== Existing Login protection =====
+   If the selected database already contains Login credentials,
+   Email/Password must not be editable. Saving settings keeps the
+   existing credentials unchanged. */
+let existingAuthLoaded = false;
+let existingAuthEmail = "";
+
+function applyExistingAuthLock() {
+  const emailEl = document.getElementById("setAuthEmail") ||
+                  document.getElementById("setLoginEmail") ||
+                  document.getElementById("authEmail") ||
+                  document.getElementById("loginEmail");
+  const passEl = document.getElementById("setAuthPassword") ||
+                 document.getElementById("setLoginPassword") ||
+                 document.getElementById("authPassword") ||
+                 document.getElementById("loginPassword");
+  if (existingAuthLoaded) {
+    if (emailEl) {
+      emailEl.value = existingAuthEmail || emailEl.value || "";
+      emailEl.readOnly = true;
+      emailEl.setAttribute("aria-readonly","true");
+      emailEl.title = "มีข้อมูล Login เดิมในฐานข้อมูล ไม่สามารถแก้ไขได้";
+    }
+    if (passEl) {
+      passEl.value = "";
+      passEl.placeholder = "******";
+      passEl.readOnly = true;
+      passEl.setAttribute("aria-readonly","true");
+      passEl.title = "มีรหัสผ่านเดิมในฐานข้อมูล ไม่สามารถแก้ไขได้";
+    }
+  }
+}
+
+
+// เมื่อพบฐานข้อมูลเดิม: ใช้รายชื่อชุมชนเดิมเป็นข้อมูลหลัก
+// แต่ไม่บังคับให้ผู้ใช้ดึง/กรอก/แก้ไขรายชื่อในหน้าตั้งค่า
+let existingCloudCommunitiesLocked = false;
+let existingCloudCommunities = [];
+
+function applyExistingCommunityLock(){
+  const el = document.getElementById("setCommunities");
+  if(!el) return;
+  if(existingCloudCommunitiesLocked){
+    // รายชื่อเดิมห้ามลบ แต่อนุญาตให้เพิ่มรายการใหม่ได้
+    // การรวมรายการเดิม + รายการใหม่จะทำตอนบันทึกใน saveSettings()
+    const current = String(el.value || "").trim();
+    if(!current){
+      el.value = existingCloudCommunities.join(", ");
+    }
+    el.readOnly = false;
+    el.removeAttribute("aria-readonly");
+    el.title = "รายชื่อเดิมห้ามลบหรือแก้ไข สามารถเพิ่มรายชื่อใหม่ได้ โดยระบบจะเก็บรายการเดิมไว้เสมอ";
+  }
+}
+
+async function saveSettings(){
+  const bSub=document.getElementById("setBrandSub").value.trim();
+  const api=document.getElementById("setApiUrl").value.trim();
+  const cloud=document.getElementById("setCloudEnabled").checked;
+
+  let authEmail=document.getElementById("setAuthEmail").value.trim().toLowerCase();
+  let authPassword=document.getElementById("setAuthPassword").value;
+
+  // อ่านค่าที่ผู้ใช้กรอกไว้
+  // ถ้ามีรายชื่อเดิมจากฐานข้อมูล Cloud ให้รวม "รายชื่อเดิม + รายชื่อใหม่"
+  // และห้ามลบรายการเดิมออกจาก Master Data
+  const enteredCommunities=document.getElementById("setCommunities").value
+    .split(",")
+    .map(x=>x.trim())
+    .filter(Boolean);
+
+  let cs;
+  if(existingCloudCommunitiesLocked && existingCloudCommunities.length){
+    const oldList=existingCloudCommunities
+      .map(x=>String(x).trim())
+      .filter(Boolean);
+    cs=[...new Set([...oldList,...enteredCommunities])];
+  }else{
+    cs=[...new Set(enteredCommunities)];
+  }
+  let ts=document.getElementById("setTypes").value.split(",").map(x=>x.trim()).filter(Boolean);
+  let hs=document.getElementById("setHelps").value.split(",").map(x=>x.trim()).filter(Boolean);
+
+  let cloudOld=null;
+
+  if(cloud && !api){
+    alert("หากเปิด Cloud กรุณาระบุ URL");
+    return;
+  }
+
+  // สำคัญ: เมื่อใส่ Web App URL แล้วกดบันทึก ให้ตรวจฐานข้อมูลเดิมก่อน
+  // และนำการตั้งค่าเดิมกลับมาใช้ โดยเฉพาะ "รายชื่อชุมชน / โซนย่อย"
+  if(cloud && api){
+    try{
+      setCloudStatus("☁️ กำลังตรวจสอบฐานข้อมูลเดิมจาก Cloud…");
+      const dd=await cloudRequest("getAll");
+      if(dd?.data && typeof dd.data==="object") cloudOld=dd.data;
+      else if(dd?.result && typeof dd.result==="object") cloudOld=dd.result;
+      else cloudOld=dd;
+
+      // ดึง Login เดิม
+      if(cloudOld?.auth?.email && cloudOld?.auth?.salt && cloudOld?.auth?.hash){
+        settings.auth=cloudOld.auth;
+        authEmail=cloudOld.auth.email;
+        authPassword="";
+        existingAuthLoaded=true;
+        existingAuthEmail=cloudOld.auth.email;
+      }
+
+      // ดึงการตั้งค่าเดิมจากฐานข้อมูล
+      const oldSettings=cloudOld?.settings || {};
+
+      // รองรับทั้งฐานข้อมูลใหม่ที่เก็บ settings และฐานข้อมูลเดิมที่อาจส่ง
+      // communities/types/helps ไว้ระดับบนสุด
+      if(Array.isArray(cloudOld?.communities) && cloudOld.communities.length && !oldSettings.communities){
+        oldSettings.communities=cloudOld.communities;
+      }
+
+      // ฐานข้อมูลเดิม: ล็อกรายชื่อชุมชนเดิมไว้ใช้ภายในระบบ
+      // ไม่ต้องให้ผู้ใช้กรอกหรือแก้ไขใหม่ในหน้าตั้งค่า
+      if(Array.isArray(oldSettings.communities) && oldSettings.communities.length){
+        existingCloudCommunitiesLocked=true;
+        existingCloudCommunities=oldSettings.communities.map(x=>String(x).trim()).filter(Boolean);
+        communities=existingCloudCommunities.slice();
+        applyExistingCommunityLock();
+      }
+      if(Array.isArray(cloudOld?.types) && cloudOld.types.length && !oldSettings.types){
+        oldSettings.types=cloudOld.types;
+      }
+      if(Array.isArray(cloudOld?.helps) && cloudOld.helps.length && !oldSettings.helps){
+        oldSettings.helps=cloudOld.helps;
+      }
+
+      // ถ้ามี "รายชื่อชุมชน / โซนย่อย" เดิม ให้ใช้ค่าจากฐานข้อมูลเดิมทันที
+      if(Array.isArray(oldSettings.communities) && oldSettings.communities.length){
+        cs=oldSettings.communities.map(x=>String(x).trim()).filter(Boolean);
+        communities=cs;
+        const el=document.getElementById("setCommunities");
+        if(el) el.value=cs.join(", ");
+      }
+
+      // ดึงประเภทผู้ขอรับความช่วยเหลือเดิมด้วย หากมี
+      if(Array.isArray(oldSettings.types) && oldSettings.types.length){
+        ts=oldSettings.types.map(x=>String(x).trim()).filter(Boolean);
+        types=ts;
+        const el=document.getElementById("setTypes");
+        if(el) el.value=ts.join(", ");
+      }
+
+      // ดึงประเภทการช่วยเหลือเดิมด้วย หากมี
+      if(Array.isArray(oldSettings.helps) && oldSettings.helps.length){
+        hs=oldSettings.helps.map(x=>String(x).trim()).filter(Boolean);
+        helps=hs;
+        const el=document.getElementById("setHelps");
+        if(el) el.value=hs.join(", ");
+      }
+
+      // นำรายละเอียดเดิมกลับมา หากมี และผู้ใช้ยังไม่ได้เปลี่ยน
+      if(oldSettings.brandSub && !bSub){
+        const el=document.getElementById("setBrandSub");
+        if(el) el.value=oldSettings.brandSub;
+      }
+
+      // ถ้ามีฐานข้อมูลเดิม ไม่บังคับให้ผู้ใช้กรอกข้อมูลชุมชนใหม่
+      // หากไม่มีข้อมูลเดิมจึงค่อยใช้ค่าที่ผู้ใช้กรอก
+    }catch(e){
+      console.warn("ตรวจฐานข้อมูลเดิมจาก Cloud",e);
+      // ให้ loadCloud ด้านล่างตรวจซ้ำและแจ้งข้อผิดพลาดอย่างเป็นทางการ
+    }
+  }
+
+  // ===== ฐานข้อมูลเดิม / Cloud: ไม่บังคับกรอกค่าตั้งค่าซ้ำ =====
+  // หากมี URL Cloud ให้ถือว่าเป็นฐานข้อมูลที่อาจมีข้อมูลเดิมอยู่แล้ว
+  // รายชื่อชุมชน/โซนและรายการอื่น ๆ จะใช้ค่าจาก Cloud ถ้ามี
+  // หาก Cloud รุ่นเก่าไม่มี settings ระบบจะใช้ค่าที่อ่านจาก people/help
+  // และจะไม่หยุดด้วยข้อความ "กรุณากรอกข้อมูลตั้งค่าให้ครบ"
+
+  const hasCloudTarget = !!(cloud && api);
+
+  if(cloudOld){
+    const oldSettings=cloudOld.settings || {};
+
+    // รองรับทั้งรูปแบบ settings.* และค่าระดับบนสุด
+    if(Array.isArray(cloudOld.communities) && cloudOld.communities.length && !oldSettings.communities)
+      oldSettings.communities=cloudOld.communities;
+    if(Array.isArray(cloudOld.types) && cloudOld.types.length && !oldSettings.types)
+      oldSettings.types=cloudOld.types;
+    if(Array.isArray(cloudOld.helps) && cloudOld.helps.length && !oldSettings.helps)
+      oldSettings.helps=cloudOld.helps;
+
+    // ชุมชนเดิม: ใช้จาก settings ก่อน
+    if(Array.isArray(oldSettings.communities) && oldSettings.communities.length){
+      cs=oldSettings.communities.map(x=>String(x).trim()).filter(Boolean);
+    }
+
+    // ฐานข้อมูลเก่าที่ไม่มี settings.communities:
+    // สร้างรายการชุมชนจาก people.community
+    if(!cs.length && Array.isArray(cloudOld.people)){
+      cs=[...new Set(
+        cloudOld.people
+          .map(p=>String(p?.community||"").trim())
+          .filter(Boolean)
+      )];
+    }
+
+    // ประเภทเดิม
+    if(Array.isArray(oldSettings.types) && oldSettings.types.length){
+      ts=oldSettings.types.map(x=>String(x).trim()).filter(Boolean);
+    }
+    if(!ts.length && Array.isArray(cloudOld.people)){
+      ts=[...new Set(
+        cloudOld.people
+          .flatMap(p=>Array.isArray(p?.types)?p.types:[p?.types])
+          .map(x=>String(x||"").trim())
+          .filter(Boolean)
+      )];
+    }
+
+    // ประเภทการช่วยเหลือเดิม
+    if(Array.isArray(oldSettings.helps) && oldSettings.helps.length){
+      hs=oldSettings.helps.map(x=>String(x).trim()).filter(Boolean);
+    }
+    if(!hs.length && Array.isArray(cloudOld.help)){
+      hs=[...new Set(
+        cloudOld.help
+          .flatMap(h=>Array.isArray(h?.types)?h.types:[h?.types])
+          .map(x=>String(x||"").trim())
+          .filter(Boolean)
+      )];
+    }
+
+    // เก็บรายการชุมชนเดิมไว้ใช้ในหน้าเพิ่มข้อมูล
+    if(cs.length){
+      existingCloudCommunitiesLocked=true;
+      existingCloudCommunities=cs.slice();
+      communities=cs.slice();
+    }
+    if(ts.length) types=ts.slice();
+    if(hs.length) helps=hs.slice();
+
+    // แสดงค่าที่พบในช่องตั้งค่าเพื่อให้ผู้ใช้เห็น แต่ชุมชนเดิมถูกล็อก
+    const ce=document.getElementById("setCommunities");
+    if(ce && cs.length){
+      ce.value=cs.join(", ");
+      ce.readOnly=true;
+      ce.title="ฐานข้อมูลเดิมมีรายการนี้อยู่แล้ว ระบบจะใช้รายการเดิม";
+    }
+    const te=document.getElementById("setTypes");
+    if(te && ts.length) te.value=ts.join(", ");
+    const he=document.getElementById("setHelps");
+    if(he && hs.length) he.value=hs.join(", ");
+  }
+
+  // ถ้า Cloud มีข้อมูลเดิม แต่ยังไม่มี settings บางรายการ
+  // ไม่ต้องบังคับผู้ใช้กรอกใหม่ ให้ใช้ค่าที่มีอยู่ในเครื่อง/ค่าเริ่มต้น
+  if(!cs.length) cs=communities?.length?communities.slice():DEFAULT_COMMUNITIES.slice();
+  if(!ts.length) ts=types?.length?types.slice():DEFAULT_TYPES.slice();
+  if(!hs.length) hs=helps?.length?helps.slice():DEFAULT_HELPS.slice();
+
+  // กรณี Online: มี URL แล้วให้ผ่านขั้นตอนตั้งค่าได้เลย
+  // ไม่บังคับกรอก communities/types/helps ซ้ำ
+  // กรณี Offline ฐานข้อมูลใหม่จึงค่อยบังคับกรอก
+  if(!hasCloudTarget){
+    if(!cs.length||!ts.length||!hs.length){
+      alert("กรุณากรอกข้อมูลตั้งค่าให้ครบ");
+      return;
+    }
+  }
+
+  if(!authEmail) authEmail=settings.auth?.email||"";
+  if(!authEmail||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(authEmail)){
+    alert("กรุณากรอก Email สำหรับเข้าสู่ระบบให้ถูกต้อง");
+    return;
+  }
+
+  // ถ้ามี Login เดิม ห้ามเปลี่ยน Password และกดบันทึกผ่านได้เลย
+  if(existingAuthLoaded || settings.auth?.hash){
+    authPassword="";
+  }else{
+    if(!authPassword){
+      alert("กรุณาตั้ง Password อย่างน้อย 6 ตัวอักษร");
+      return;
+    }
+    if(authPassword.length<6){
+      alert("กรุณาตั้ง Password อย่างน้อย 6 ตัวอักษร");
+      return;
+    }
+  }
+
+  if(!authEmail) authEmail=settings.auth?.email||"";
+  if(!authEmail||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(authEmail)){
+    alert("กรุณากรอก Email สำหรับเข้าสู่ระบบให้ถูกต้อง");
+    return;
+  }
+
+  // ถ้ามี Login เดิม ห้ามเปลี่ยน Password และกดบันทึกผ่านได้เลย
+  if(existingAuthLoaded || settings.auth?.hash){
+    authPassword="";
+  }else{
+    if(!authPassword){
+      alert("กรุณาตั้ง Password อย่างน้อย 6 ตัวอักษร");
+      return;
+    }
+    if(authPassword.length<6){
+      alert("กรุณาตั้ง Password อย่างน้อย 6 ตัวอักษร");
+      return;
+    }
+  }
+
+  if(!cloud&&!settings.folderHandle){
+    alert("กรุณาเลือกโฟลเดอร์สำหรับฐานข้อมูล Offline ก่อน");
+    return;
+  }
+
+  const oldSettingsState=settings, oldConfigured=isConfigured, oldAPI=API_URL;
+  let newAuth=settings.auth;
+
+  // สร้าง Login ใหม่เฉพาะกรณีฐานข้อมูลยังไม่มี Login เดิม
+  if(authPassword){
+    newAuth=await createAuth(authEmail,authPassword);
+  }else if(newAuth){
+    // ห้ามแก้ Email/Password เดิม
+    newAuth=Object.assign({},newAuth);
+  }else if(cloudOld?.auth){
+    newAuth=cloudOld.auth;
+  }
+
+  const candidate=Object.assign({},settings,{
+    brandName:DEFAULT_NAME,
+    brandSub:(document.getElementById("setBrandSub").value.trim()||DEFAULT_HEADER),
+    apiUrl:cloud?api:"",
+    communities:cs,
+    types:ts,
+    helps:hs,
+    configured:false,
+    cloudEnabled:cloud,
+    folderName:selectedFolderName||settings.folderName||"",
+    auth:newAuth
+  });
+
+  settings=candidate;
+  API_URL=cloud?api:"";
+  communities=cs;
+  types=ts;
+  helps=hs;
+
+  isConfigured=true;
+  people=[]; help=[]; statuses=[];
+
+  try{
+    if(cloud){
+      setCloudStatus("☁️ กำลังตรวจสอบและดึงข้อมูลเดิมจาก Cloud ก่อนเปิดใช้งาน…");
+      const ok=await loadCloud(true);
+      if(!ok) throw new Error("เชื่อมต่อ Cloud หรือดึงข้อมูลเดิมไม่สำเร็จ กรุณาตรวจสอบ URL/การเผยแพร่ Web App และ Cloudflare Pages Function /api/cloud");
+
+      // loadCloud อาจได้ settings เดิมมาแล้ว ให้ค่าจาก Cloud เป็นหลัก
+      if(Array.isArray(settings.communities) && settings.communities.length){
+        communities=settings.communities.slice();
+        cs=communities.slice();
+      }
+
+      // ถ้ามี Login เดิม ให้ส่งเฉพาะการตั้งค่าอื่น ๆ กลับไป
+      // โดยไม่เขียนทับ auth เดิม
+      const payload={
+        action:"saveAuth",
+        settings:{
+          communities:communities,
+          types:types,
+          helps:helps,
+          brandSub:settings.brandSub
+        }
+      };
+      if(!settings.auth?.hash && newAuth) payload.auth=newAuth;
+
+      const ad=await cloudRequest("saveAuth",payload);
+      if(!ad.ok) throw new Error(ad.error||"ไม่สามารถบันทึกการตั้งค่าลง Cloud ได้");
+    }else{
+      if(!(await ensureFolderPermission(settings.folderHandle,true)))
+        throw new Error("ไม่ได้รับสิทธิ์อ่าน/เขียนโฟลเดอร์");
+
+      const loaded=await loadFolderData(false);
+      if(!loaded){
+        const f=await settings.folderHandle.getFileHandle(DATA_FILE_NAME,{create:false})
+          .catch(e=>{if(e.name==="NotFoundError")return null;throw e});
+        if(f) throw new Error("ไฟล์ข้อมูลเดิมไม่ถูกต้องหรืออ่านไม่ได้");
+      }
+
+      // Offline: บันทึก Login และการตั้งค่าลงฐานข้อมูลที่เลือก
+      await writeFolderData();
+    }
+
+    settings.configured=true;
+    isConfigured=true;
+    authenticated=false;
+    await persistSettings();
+
+    updateHeaderUI();
+    updateModeUI();
+    render();
+
+    alert(
+      `✅ ตั้งค่าและตรวจสอบสำเร็จ\n\n`+
+      `โหมดการทำงาน: ${cloud?"☁️ Online • Google Apps Script เป็นฐานข้อมูลหลัก":"📱 Offline • community-care-data.json เป็นฐานข้อมูลหลัก"}\n\n`+
+      `รายชื่อชุมชน / โซนย่อย: ${communities.join(", ")}\n\n`+
+      `กรุณา Login ก่อนเริ่มใช้งาน`
+    );
+
+    setPage("home");
+    showLoginGate();
+  }catch(e){
+    console.error("saveSettings",e);
+    settings=oldSettingsState;
+    isConfigured=oldConfigured;
+    API_URL=oldAPI;
+    communities=settings.communities?.length?settings.communities:DEFAULT_COMMUNITIES.slice();
+    types=settings.types?.length?settings.types:DEFAULT_TYPES.slice();
+    helps=settings.helps?.length?settings.helps:DEFAULT_HELPS.slice();
+    people=[];help=[];statuses=[];
+    updateHeaderUI();
+    updateModeUI();
+    render();
+    alert("❌ ยังไม่เปิดใช้งานระบบ\n\n"+e.message+"\n\nการตั้งค่าที่ยังไม่ผ่านการตรวจสอบจะไม่ถูกบันทึกเป็นสถานะพร้อมใช้งาน");
+  }
+}
+async function resetSettings(){
+  if(!confirm(
+    "ต้องการล้างการตั้งค่าเครื่องนี้หรือไม่?\n\n"+
+    "ระบบจะล้างเฉพาะการตั้งค่า Online/Offline, URL Cloud, โฟลเดอร์ที่เลือก และค่าการตั้งค่าของเครื่องนี้\n"+
+    "ข้อมูลผู้ขอรับความช่วยเหลือและข้อมูลการช่วยเหลือจะไม่ถูกลบ\n"+
+    "ไฟล์ community-care-data.json และข้อมูลบน Cloud จะไม่ถูกลบ"
+  )) return;
+
+  // ล้างเฉพาะสถานะการตั้งค่า ไม่แตะข้อมูล people/help/statuses
+  try{
+    if(dbReady) await idbClear("settings");
+  }catch(e){
+    console.warn("clear settings store", e);
+  }
+
+  // ล้างค่าการตั้งค่าที่เก็บไว้เฉพาะเครื่อง
+  try{
+    localStorage.removeItem(DEVICE_CONFIG_KEY);
+  }catch(e){
+    console.warn("clear device config", e);
+  }
+
+  settings={
+    apiUrl:"",
+    communities:[],
+    types:DEFAULT_TYPES.slice(),
+    helps:DEFAULT_HELPS.slice(),
+    brandName:DEFAULT_NAME,
+    brandSub:DEFAULT_HEADER,
+    configured:false,
+    cloudEnabled:false,
+    theme:"light",
+    folderName:"",
+    folderHandle:null,
+    auth:null
+  };
+
+  people=[];
+  help=[];
+  statuses=[];
+  isConfigured=false;
+  authenticated=false;
+  API_URL="";
+  communities=settings.communities;
+  types=settings.types;
+  helps=settings.helps;
+  selectedFolderName="";
+
+  document.documentElement.removeAttribute("data-theme");
+
+  // บันทึกสถานะ "ยังไม่ได้ตั้งค่า" ไว้ เพื่อให้หน้าเว็บรู้ว่าต้องเข้าสู่การตั้งค่า
+  await persistSettings();
+
+  updateHeaderUI();
+  updateModeUI();
+  page="settings";
+  render();
+
+  alert(
+    "🔄 ล้างการตั้งค่าเครื่องเรียบร้อยแล้ว\n\n"+
+    "ตอนนี้สามารถตั้งค่าระบบใหม่ได้ทันที\n\n"+
+    "หมายเหตุ: ข้อมูลใน Cloud และไฟล์ Offline เดิมไม่ได้ถูกลบ"
+  );
+}
+
+function exportCSV(){
+let rows=[["ID","คำนำหน้า","ชื่อ","นามสกุล","เลขบัตร","วันเกิด","ที่อยู่","โทรศัพท์","ชุมชน","ประเภท","ระดับ","สถานะ","หมายเหตุ"],...people.map(p=>[p.id,p.prefix,p.first,p.last,p.idcard,p.birth,p.address,p.phone,p.community,(p.types||[]).join(" / "),p.priority,p.status,p.note])];
+let csv="\ufeff"+rows.map(r=>r.map(x=>`"${String(x??"").replace(/"/g,'""')}"`).join(",")).join("\n");let blob=new Blob([csv],{type:"text/csv;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="community-care-data.csv";a.click();URL.revokeObjectURL(url)
+}
+
+// เริ่มระบบจาก DOMContentLoaded — ไม่มีการโหลด Cloud อัตโนมัติ
+</script>
+</body>
+</html>
